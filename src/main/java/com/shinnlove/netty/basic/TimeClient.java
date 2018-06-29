@@ -14,16 +14,26 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
+ * 基础netty客户端的使用方法。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClient.java, v 0.1 2018-06-29 上午11:53 shinnlove.jinsheng Exp $$
  */
 public class TimeClient {
 
+    /**
+     * 连接服务端并且将服务端的响应信息交给handler处理。
+     *
+     * @param port
+     * @param host
+     * @throws Exception
+     */
     public void connect(int port, String host) throws Exception {
         // 配置客户端NIO线程组
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
+            // 客户端使用`NioSocketChannel`类来处理
             b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -44,6 +54,8 @@ public class TimeClient {
     }
 
     /**
+     * 运行netty客户端，并且连接服务端通信。
+     *
      * @param args
      * @throws Exception
      */
