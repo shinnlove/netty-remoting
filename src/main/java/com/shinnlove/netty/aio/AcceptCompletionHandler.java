@@ -9,6 +9,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
 /**
+ * 异步套接字通道。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: AcceptCompletionHandler.java, v 0.1 2018-06-29 上午11:45 shinnlove.jinsheng Exp $$
  */

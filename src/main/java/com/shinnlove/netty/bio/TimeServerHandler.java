@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
+ * 多线程处理的客户端，被服务端主线程构造进多线程中。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServerHandler.java, v 0.1 2018-06-29 上午11:55 shinnlove.jinsheng Exp $$
  */
@@ -37,6 +39,7 @@ public class TimeServerHandler implements Runnable {
             String currentTime = null;
             String body = null;
             while (true) {
+                // 服务端等待客户端输入，会阻塞在这里
                 body = in.readLine();
                 if (body == null)
                     break;

@@ -51,6 +51,12 @@ public class AsyncTimeClientHandler implements CompletionHandler<Void, AsyncTime
         }
     }
 
+    /**
+     * 连接建立后等待服务端的回调。
+     *
+     * @param result
+     * @param attachment
+     */
     @Override
     public void completed(Void result, AsyncTimeClientHandler attachment) {
         byte[] req = "QUERY TIME ORDER".getBytes();

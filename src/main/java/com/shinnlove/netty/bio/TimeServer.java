@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
+ * 阻塞型IO服务器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServer.java, v 0.1 2018-06-29 上午11:55 shinnlove.jinsheng Exp $$
  */
@@ -35,7 +37,9 @@ public class TimeServer {
             System.out.println("The time server is start in port : " + port);
             Socket socket = null;
             while (true) {
+                // 服务端等待客户端连接，会阻塞在这里
                 socket = server.accept();
+                // 用多线程处理客户端接口
                 new Thread(new TimeServerHandler(socket)).start();
             }
         } finally {

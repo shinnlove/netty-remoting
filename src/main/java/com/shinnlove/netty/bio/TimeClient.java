@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
+ * 阻塞IO的客户端处理。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClient.java, v 0.1 2018-06-29 上午11:54 shinnlove.jinsheng Exp $$
  */
@@ -40,6 +42,7 @@ public class TimeClient {
             out = new PrintWriter(socket.getOutputStream(), true);
             out.println("QUERY TIME ORDER");
             System.out.println("Send order 2 server succeed.");
+            // 服务端没响应时阻塞在这里
             String resp = in.readLine();
             System.out.println("Now is : " + resp);
         } catch (Exception e) {

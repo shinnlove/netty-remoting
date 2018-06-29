@@ -10,6 +10,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 自定义线程池，并且使用这个线程池执行任务。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServerHandlerExecutePool.java, v 0.1 2018-06-29 下午1:29 shinnlove.jinsheng Exp $$
  */

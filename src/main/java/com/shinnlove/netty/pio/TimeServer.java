@@ -11,6 +11,8 @@ import java.net.Socket;
 import com.shinnlove.netty.bio.TimeServerHandler;
 
 /**
+ * 使用线程池
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServer.java, v 0.1 2018-06-29 下午1:29 shinnlove.jinsheng Exp $$
  */
@@ -39,7 +41,9 @@ public class TimeServer {
             TimeServerHandlerExecutePool singleExecutor = new TimeServerHandlerExecutePool(50,
                 10000);// 创建IO任务线程池
             while (true) {
+                // 阻塞在accept()
                 socket = server.accept();
+                // 使用多线程运行服务端受理到的Socket
                 singleExecutor.execute(new TimeServerHandler(socket));
             }
         } finally {
