@@ -5,6 +5,8 @@
 package com.shinnlove.netty.nio;
 
 /**
+ * NIO的时间客户端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClient.java, v 0.1 2018-06-29 下午1:38 shinnlove.jinsheng Exp $$
  */

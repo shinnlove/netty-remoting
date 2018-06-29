@@ -7,6 +7,8 @@ package com.shinnlove.netty.nio;
 import java.io.IOException;
 
 /**
+ * NIO的多路服务用服务器代码。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServer.java, v 0.1 2018-06-29 下午1:39 shinnlove.jinsheng Exp $$
  */

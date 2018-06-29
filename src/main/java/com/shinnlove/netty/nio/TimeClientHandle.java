@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * NIO无阻塞的`Selector`处理。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClientHandle.java, v 0.1 2018-06-29 下午1:38 shinnlove.jinsheng Exp $$
  */

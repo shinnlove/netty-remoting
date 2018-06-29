@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * 多路复用时间处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: MultiplexerTimeServer.java, v 0.1 2018-06-29 下午1:38 shinnlove.jinsheng Exp $$
  */
