@@ -14,6 +14,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
+ * netty时间客户端(存在TCP粘包问题)。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClient.java, v 0.1 2018-06-29 下午1:36 shinnlove.jinsheng Exp $$
  */

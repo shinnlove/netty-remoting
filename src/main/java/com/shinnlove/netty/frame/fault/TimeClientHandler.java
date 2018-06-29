@@ -12,6 +12,8 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
+ * netty时间客户端处理。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeClientHandler.java, v 0.1 2018-06-29 下午1:36 shinnlove.jinsheng Exp $$
  */
@@ -27,9 +29,15 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
      * Creates a client-side handler.
      */
     public TimeClientHandler() {
+        // 构造函数中准备发送的消息
         req = ("QUERY TIME ORDER" + System.getProperty("line.separator")).getBytes();
     }
 
+    /**
+     * 客户端在通道激活后，直接发送消息：QUERY TIME ORDER\n。
+     *
+     * @param ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ByteBuf message = null;
@@ -40,15 +48,29 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
         }
     }
 
+    /**
+     * 客户端接受服务端消息、通道可读时。
+     *
+     * @param ctx
+     * @param msg
+     * @throws Exception
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
         String body = new String(req, "UTF-8");
+        // 输出客户端的消息
         System.out.println("Now is : " + body + " ; the counter is : " + ++counter);
     }
 
+    /**
+     * 发生异常的处理。
+     *
+     * @param ctx
+     * @param cause
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // 释放资源

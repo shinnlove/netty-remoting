@@ -17,6 +17,10 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
+ * `HttpRequestDecoder`、`HttpObjectAggregator`、`HttpResponseEncoder`、`ChunkedWriteHandler`四个http类是干嘛的??
+ *
+ * 具体处理http file的处理器——`HttpFileServerHandler`。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: HttpFileServer.java, v 0.1 2018-06-28 下午7:34 shinnlove.jinsheng Exp $$
  */

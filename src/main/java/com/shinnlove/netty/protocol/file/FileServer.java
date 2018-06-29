@@ -18,6 +18,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
 
 /**
+ * 文件处理服务器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: FileServer.java, v 0.1 2018-06-29 下午3:00 shinnlove.jinsheng Exp $$
  */
@@ -40,11 +42,13 @@ public class FileServer {
                      */
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        // 字符串encoder、行分隔符、字符串decoder、最后是文件服务器处理类
                         ch.pipeline().addLast(new StringEncoder(CharsetUtil.UTF_8),
                             new LineBasedFrameDecoder(1024), new StringDecoder(CharsetUtil.UTF_8),
                             new FileServerHandler());
                     }
                 });
+
             ChannelFuture f = b.bind(port).sync();
             System.out.println("Start file server at port : " + port);
             f.channel().closeFuture().sync();

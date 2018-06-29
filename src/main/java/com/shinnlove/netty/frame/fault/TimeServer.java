@@ -14,6 +14,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 /**
+ * netty时间服务端(存在TCP粘包问题)。
+ * 
  * @author shinnlove.jinsheng
  * @version $Id: TimeServer.java, v 0.1 2018-06-29 下午1:36 shinnlove.jinsheng Exp $$
  */
@@ -26,7 +28,13 @@ public class TimeServer {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 1024).childHandler(new ChildChannelHandler());
+                .option(ChannelOption.SO_BACKLOG, 1024)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new TimeServerHandler());
+                    }
+                });
             // 绑定端口，同步等待成功
             ChannelFuture f = b.bind(port).sync();
 
@@ -37,14 +45,6 @@ public class TimeServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
-        @Override
-        protected void initChannel(SocketChannel arg0) throws Exception {
-            arg0.pipeline().addLast(new TimeServerHandler());
-        }
-
     }
 
     /**

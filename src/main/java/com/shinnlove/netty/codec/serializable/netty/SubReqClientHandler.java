@@ -21,6 +21,11 @@ public class SubReqClientHandler extends ChannelHandlerAdapter {
     public SubReqClientHandler() {
     }
 
+    /**
+     * 客户端通道激活就生成对象并输出信息。
+     *
+     * @param ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         for (int i = 0; i < 10; i++) {
@@ -39,6 +44,13 @@ public class SubReqClientHandler extends ChannelHandlerAdapter {
         return req;
     }
 
+    /**
+     * 服务端回复消息时。
+     *
+     * @param ctx
+     * @param msg
+     * @throws Exception
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("Receive server response : [" + msg + "]");

@@ -16,6 +16,8 @@ import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 
 /**
+ * 时间服务器netty服务端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: TimeServer.java, v 0.1 2018-06-29 下午1:34 shinnlove.jinsheng Exp $$
  */
@@ -41,9 +43,13 @@ public class TimeServer {
         }
     }
 
+    /**
+     * 添加通道初始化处理器，在处理器的pipeline中添加不同的处理器。
+     */
     private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
         @Override
         protected void initChannel(SocketChannel arg0) throws Exception {
+            // 重要，添加了`LineBasedFrameDecoder`处理tcp粘包问题!
             arg0.pipeline().addLast(new LineBasedFrameDecoder(1024));
             arg0.pipeline().addLast(new StringDecoder());
             arg0.pipeline().addLast(new TimeServerHandler());

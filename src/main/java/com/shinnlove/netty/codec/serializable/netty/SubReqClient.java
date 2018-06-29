@@ -31,9 +31,11 @@ public class SubReqClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        // 接收消息使用`ObjectDecoder`
                         ch.pipeline().addLast(
                             new ObjectDecoder(1024, ClassResolvers.cacheDisabled(this.getClass()
                                 .getClassLoader())));
+                        // 发送消息使用`ObjectEncoder`
                         ch.pipeline().addLast(new ObjectEncoder());
                         ch.pipeline().addLast(new SubReqClientHandler());
                     }

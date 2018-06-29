@@ -18,6 +18,8 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 
 /**
+ * 固定分隔符——输出信息的netty客户端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: EchoClient.java, v 0.1 2018-06-29 下午1:35 shinnlove.jinsheng Exp $$
  */
@@ -32,7 +34,9 @@ public class EchoClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        // 使用`$_`这个字符作为分隔符
                         ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
+                        // 最大长度1024、以$_来分隔的decoder，超过1024就换行?
                         ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, delimiter));
                         ch.pipeline().addLast(new StringDecoder());
                         ch.pipeline().addLast(new EchoClientHandler());

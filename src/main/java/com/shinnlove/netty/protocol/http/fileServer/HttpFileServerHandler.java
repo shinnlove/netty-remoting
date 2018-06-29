@@ -28,6 +28,8 @@ import io.netty.util.CharsetUtil;
 import javax.activation.MimetypesFileTypeMap;
 
 /**
+ * HTTP协议传输文件的处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: HttpFileServerHandler.java, v 0.1 2018-06-28 下午7:35 shinnlove.jinsheng Exp $$
  */

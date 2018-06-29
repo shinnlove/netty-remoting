@@ -9,6 +9,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandler.Sharable;
 
 /**
+ * netty服务端输出Server处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: EchoServerHandler.java, v 0.1 2018-06-29 下午1:37 shinnlove.jinsheng Exp $$
  */

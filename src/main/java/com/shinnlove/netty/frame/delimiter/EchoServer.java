@@ -20,6 +20,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 /**
+ * 指定分隔符——netty接收服务端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: EchoServer.java, v 0.1 2018-06-29 下午1:35 shinnlove.jinsheng Exp $$
  */
@@ -36,7 +38,9 @@ public class EchoServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        // 分隔符
                         ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
+                        // 最大长度1024切割消息的分隔符
                         ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, delimiter));
                         ch.pipeline().addLast(new StringDecoder());
                         ch.pipeline().addLast(new EchoServerHandler());

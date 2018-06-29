@@ -29,13 +29,18 @@ public class EchoServer {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
+            // netty服务端使用`NioServerSocketChannel`这个类
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 100).handler(new LoggingHandler(LogLevel.INFO))
+                .option(ChannelOption.SO_BACKLOG, 100)
+                // 添加处理器
+                .handler(new LoggingHandler(LogLevel.INFO))
+                // 添加子处理器
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new FixedLengthFrameDecoder(20));
                         ch.pipeline().addLast(new StringDecoder());
+                        // 添加服务端处理器
                         ch.pipeline().addLast(new EchoServerHandler());
                     }
                 });

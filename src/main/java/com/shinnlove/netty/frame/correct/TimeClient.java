@@ -30,6 +30,7 @@ public class TimeClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        // 使用行分隔符
                         ch.pipeline().addLast(new LineBasedFrameDecoder(1024));
                         ch.pipeline().addLast(new StringDecoder());
                         ch.pipeline().addLast(new TimeClientHandler());
