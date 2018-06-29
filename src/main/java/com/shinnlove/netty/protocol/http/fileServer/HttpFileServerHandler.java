@@ -55,17 +55,20 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
             return;
         }
         final String uri = request.getUri();
+        // 解析成完整的地址路径
         final String path = sanitizeUri(uri);
         // 403
         if (path == null) {
             sendError(ctx, FORBIDDEN);
             return;
         }
+        // 打开文件(忽略隐藏文件)
         File file = new File(path);
         if (file.isHidden() || !file.exists()) {
             sendError(ctx, NOT_FOUND);
             return;
         }
+        // 处理文件夹
         if (file.isDirectory()) {
             if (uri.endsWith("/")) {
                 sendListing(ctx, file);
@@ -79,14 +82,17 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
             sendError(ctx, FORBIDDEN);
             return;
         }
+        // 处理文件
         RandomAccessFile randomAccessFile = null;
         try {
-            randomAccessFile = new RandomAccessFile(file, "r");// 以只读的方式打开文件
+            // 以只读的方式打开文件
+            randomAccessFile = new RandomAccessFile(file, "r");
         } catch (FileNotFoundException fnfe) {
             sendError(ctx, NOT_FOUND);
             return;
         }
         long fileLength = randomAccessFile.length();
+
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentLength(response, fileLength);
         setContentTypeHeader(response, file);
@@ -94,18 +100,20 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
             response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
         ctx.write(response);
+
+        // 通过netty的`ChunkedFile`对象直接将文件写入到发送缓冲区
+        // `ChannelFuture`是一个异步IO的Future对象
         ChannelFuture sendFileFuture;
         sendFileFuture = ctx.write(new ChunkedFile(randomAccessFile, 0, fileLength, 8192),
             ctx.newProgressivePromise());
+        // 在future上增加listener->`GenericFutureListener`
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress,
                                             long total) {
-                if (total < 0) { // total unknown
-                    System.err.println("Transfer progress: " + progress);
-                } else {
-                    System.err.println("Transfer progress: " + progress + " / " + total);
-                }
+                // 特别注意：没有发送完成文件之间，total永远都是-1，是未知的，发送完了才知道(所以可以在发送文件前访问下文件大小，以便在处理中写入线程安全的单例map中)
+                System.out.println("Transfer progress: progress=" + progress + ", total=" + total
+                                   + ". Percent is: " + (progress + " / " + total));
             }
 
             @Override
@@ -113,7 +121,10 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                 System.out.println("Transfer complete.");
             }
         });
+        // 使用`chunked`编码、最后需要发送一个编码结束的空消息体
         ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        // 不是keep-alive连接，服务端要主动关闭连接
         if (!isKeepAlive(request)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
@@ -131,9 +142,11 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
 
     private String sanitizeUri(String uri) {
         try {
+            // 将uri进行utf-8解码
             uri = URLDecoder.decode(uri, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             try {
+                // 西欧字体转码
                 uri = URLDecoder.decode(uri, "ISO-8859-1");
             } catch (UnsupportedEncodingException e1) {
                 throw new Error();
@@ -150,6 +163,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
             || uri.startsWith(".") || uri.endsWith(".") || INSECURE_URI.matcher(uri).matches()) {
             return null;
         }
+        // 用户目录下、文件分隔符、地址
         return System.getProperty("user.dir") + File.separator + uri;
     }
 

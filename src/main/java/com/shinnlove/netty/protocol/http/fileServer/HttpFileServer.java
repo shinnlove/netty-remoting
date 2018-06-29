@@ -26,9 +26,9 @@ import io.netty.handler.stream.ChunkedWriteHandler;
  */
 public class HttpFileServer {
 
-    private static final String DEFAULT_URL = "/src/com/shinnlove/netty/";
+    private static final String DEFAULT_URL = "/src/main/java/com/shinnlove/netty/";
 
-    private static final String IP_ADDRESS  = "192.168.1.102";
+    private static final String IP_ADDRESS  = "127.0.0.1";
 
     public void run(final int port, final String url) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -39,10 +39,14 @@ public class HttpFileServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
+                        // `HttpRequestDecoder`解码器在每个HTTP消息中会生成多个消息对象
                         ch.pipeline().addLast("http-decoder", new HttpRequestDecoder());
+                        // 将多个消息转换为单一的`FullHttpRequest`或者`FullHttpResponse`
                         ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));
                         ch.pipeline().addLast("http-encoder", new HttpResponseEncoder());
+                        // `ChunkedWriteHandler`支持异步发送大的码流(大的文件传输)、但不会占用过多内存，防止Java内存溢出
                         ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
+                        // 文件服务器业务处理逻辑handler
                         ch.pipeline().addLast("fileServerHandler", new HttpFileServerHandler(url));
                     }
                 });
@@ -51,6 +55,7 @@ public class HttpFileServer {
             System.out.println("HTTP文件目录服务器启动，网址是 : " + "http://" + IP_ADDRESS + ":" + port + url);
             future.channel().closeFuture().sync();
         } finally {
+            // 优雅关闭netty
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
