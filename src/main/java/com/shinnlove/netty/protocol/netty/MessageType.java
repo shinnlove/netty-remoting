@@ -5,6 +5,8 @@
 package com.shinnlove.netty.protocol.netty;
 
 /**
+ * Netty私有协议栈报文类型。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: MessageType.java, v 0.1 2018-06-29 下午1:13 shinnlove.jinsheng Exp $$
  */

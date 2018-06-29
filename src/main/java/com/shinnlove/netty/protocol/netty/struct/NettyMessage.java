@@ -5,13 +5,17 @@
 package com.shinnlove.netty.protocol.netty.struct;
 
 /**
+ * 私有netty协议消息报文。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: NettyMessage.java, v 0.1 2018-06-29 下午1:13 shinnlove.jinsheng Exp $$
  */
 public final class NettyMessage {
 
+    /** 报文头 */
     private Header header;
 
+    /** 报文体 */
     private Object body;
 
     /**

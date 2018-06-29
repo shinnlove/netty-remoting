@@ -29,26 +29,31 @@ public class NettyServer {
 
     public void bind() throws Exception {
         // 配置服务端的NIO线程组
+        // 服务端需要两个线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
             .option(ChannelOption.SO_BACKLOG, 100).handler(new LoggingHandler(LogLevel.INFO))
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws IOException {
+                    // Tips：netty的每个handler的`channelRead`和exceptionCaught`如果调用`fire...`可以发送给下个handler处理!!
                     ch.pipeline().addLast(new NettyMessageDecoder(1024 * 1024, 4, 4));
                     ch.pipeline().addLast(new NettyMessageEncoder());
                     ch.pipeline().addLast("readTimeoutHandler", new ReadTimeoutHandler(50));
+                    // 服务端登录验证响应处理器
                     ch.pipeline().addLast(new LoginAuthRespHandler());
+                    // 服务端心跳响应处理器
                     ch.pipeline().addLast("HeartBeatHandler", new HeartBeatRespHandler());
                 }
             });
 
         // 绑定端口，同步等待成功
-        b.bind(NettyConstant.REMOTEIP, NettyConstant.PORT).sync();
+        b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
         System.out.println("Netty server start ok : "
-                           + (NettyConstant.REMOTEIP + " : " + NettyConstant.PORT));
+                           + (NettyConstant.REMOTE_IP + " : " + NettyConstant.REMOTE_PORT));
     }
 
     public static void main(String[] args) throws Exception {

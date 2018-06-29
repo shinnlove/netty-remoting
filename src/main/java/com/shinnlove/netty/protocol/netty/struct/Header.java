@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 私有netty协议栈消息请求头。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: Header.java, v 0.1 2018-06-29 下午1:12 shinnlove.jinsheng Exp $$
  */
