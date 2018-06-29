@@ -22,6 +22,8 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 /**
+ * Netty私有协议服务端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: NettyServer.java, v 0.1 2018-06-29 下午1:12 shinnlove.jinsheng Exp $$
  */
