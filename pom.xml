@@ -13,7 +13,7 @@
   <url>http://www.shinnlove.com</url>
 
   <properties>
-
+    <org.jibx.version>1.2.6</org.jibx.version>
   </properties>
 
   <dependencies>
@@ -62,30 +62,32 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- jibx-bind -->
     <dependency>
-      <groupId>jibx</groupId>
+      <groupId>org.jibx</groupId>
       <artifactId>jibx-bind</artifactId>
-      <version>1.1.2</version>
+      <version>${org.jibx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jibx</groupId>
       <artifactId>jibx-extras</artifactId>
-      <version>1.2.6</version>
+      <version>${org.jibx.version}</version>
     </dependency>
+    <!-- jibx-run -->
     <dependency>
-      <groupId>jibx</groupId>
+      <groupId>org.jibx</groupId>
       <artifactId>jibx-run</artifactId>
-      <version>1.1.2</version>
+      <version>${org.jibx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jibx</groupId>
       <artifactId>jibx-schema</artifactId>
-      <version>1.2.6</version>
+      <version>${org.jibx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jibx</groupId>
       <artifactId>jibx-tools</artifactId>
-      <version>1.2.6</version>
+      <version>${org.jibx.version}</version>
     </dependency>
 
     <dependency>
@@ -99,6 +101,28 @@
       <artifactId>wstx-asl</artifactId>
       <version>3.2.9</version>
     </dependency>
+
+    <!-- joda-time ???干嘛用的 -->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.9.9</version>
+    </dependency>
+
+    <!-- qdox ???干嘛用的 -->
+    <dependency>
+      <groupId>com.thoughtworks.qdox</groupId>
+      <artifactId>qdox</artifactId>
+      <version>1.12.1</version>
+    </dependency>
+
+    <!-- stax-api ???干嘛用的 -->
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>
