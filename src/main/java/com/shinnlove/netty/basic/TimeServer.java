@@ -29,6 +29,7 @@ public class TimeServer {
      */
     public void bind(int port) throws Exception {
         // 配置服务端的NIO线程组
+        // 一个NIO线程组用来接收客户端连接、一个NIO线程组用来进行`SocketChannel`读写
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {

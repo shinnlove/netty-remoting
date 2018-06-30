@@ -43,7 +43,7 @@ public class HttpXmlRequest {
     }
 
     /**
-     * @param object
+     * @param body
      *            the object to set
      */
     public final void setBody(Object body) {
