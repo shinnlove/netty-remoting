@@ -11,6 +11,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 
 /**
+ * 使用UDP协议响应中国谚语查询的netty服务端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: ChineseProverbServer.java, v 0.1 2018-06-29 下午1:21 shinnlove.jinsheng Exp $$
  */
@@ -20,11 +22,17 @@ public class ChineseProverbServer {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
+            // 使用`NioDatagramChannel`类
             b.group(group).channel(NioDatagramChannel.class)
+            // 广播类型
                 .option(ChannelOption.SO_BROADCAST, true)
+                // 添加谚语查询服务端处理器
                 .handler(new ChineseProverbServerHandler());
+
+            // 等待得到一个通道关闭提示
             b.bind(port).sync().channel().closeFuture().await();
         } finally {
+            // 优雅的关闭
             group.shutdownGracefully();
         }
     }

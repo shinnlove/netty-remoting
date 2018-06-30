@@ -4,6 +4,7 @@
  */
 package com.shinnlove.netty.protocol.udp;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,6 +13,8 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.internal.ThreadLocalRandom;
 
 /**
+ * 中国谚语查询netty服务端处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: ChineseProverbServerHandler.java, v 0.1 2018-06-29 下午1:22 shinnlove.jinsheng Exp $$
  */
@@ -26,16 +29,35 @@ public class ChineseProverbServerHandler extends SimpleChannelInboundHandler<Dat
         return DICTIONARY[quoteId];
     }
 
+    /**
+     * 接收到客户端发来的消息时。
+     *
+     * 特别注意：通道写入使用`DatagramPacket`类。
+     *
+     * @param ctx
+     * @param packet
+     * @throws Exception
+     */
     @Override
     public void messageReceived(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
         String req = packet.content().toString(CharsetUtil.UTF_8);
         System.out.println(req);
         if ("谚语字典查询?".equals(req)) {
-            ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer("谚语查询结果: " + nextQuote(),
-                CharsetUtil.UTF_8), packet.sender()));
+            // 将信息以utf-8格式写入`ByteBuf`中，再用UDP的`DatagramPacket`包装写入通道中。
+            String respInfo = "谚语查询结果: " + nextQuote();
+            ByteBuf data = Unpooled.copiedBuffer(respInfo, CharsetUtil.UTF_8);
+            DatagramPacket resp = new DatagramPacket(data, packet.sender());
+            ctx.writeAndFlush(resp);
         }
     }
 
+    /**
+     * 发生异常时关闭通道。
+     *
+     * @param ctx
+     * @param cause
+     * @throws Exception
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
