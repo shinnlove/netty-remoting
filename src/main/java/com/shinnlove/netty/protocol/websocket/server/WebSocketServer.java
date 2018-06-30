@@ -17,12 +17,15 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
+ * WebSocket协议netty服务端。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: WebSocketServer.java, v 0.1 2018-06-29 下午1:23 shinnlove.jinsheng Exp $$
  */
 public class WebSocketServer {
 
     public void run(int port) throws Exception {
+        // 准备react线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -35,7 +38,7 @@ public class WebSocketServer {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast("http-codec", new HttpServerCodec());
                         pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-                        ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
+                        pipeline.addLast("http-chunked", new ChunkedWriteHandler());
                         pipeline.addLast("handler", new WebSocketServerHandler());
                     }
                 });
@@ -44,8 +47,10 @@ public class WebSocketServer {
             System.out.println("Web socket server started at port " + port + '.');
             System.out.println("Open your browser and navigate to http://localhost:" + port + '/');
 
+            // 通道等待关闭Future事件
             ch.closeFuture().sync();
         } finally {
+            // 优雅的关闭
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }

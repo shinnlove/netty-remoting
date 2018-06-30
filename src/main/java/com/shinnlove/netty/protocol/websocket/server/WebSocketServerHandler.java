@@ -25,6 +25,8 @@ import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
 
 /**
+ * WebSocket服务端处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: WebSocketServerHandler.java, v 0.1 2018-06-29 下午1:23 shinnlove.jinsheng Exp $$
  */
@@ -32,7 +34,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     private static final Logger       logger = Logger.getLogger(WebSocketServerHandler.class
                                                  .getName());
-
+    /** WebSocket协议握手 */
     private WebSocketServerHandshaker handshaker;
 
     @Override
@@ -41,7 +43,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         if (msg instanceof FullHttpRequest) {
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         }
-        // WebSocket接入
+        // WebSocket接入，消息类型是`WebSocketFrame`
         else if (msg instanceof WebSocketFrame) {
             handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         }
@@ -72,6 +74,12 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         }
     }
 
+    /**
+     * 处理`WebSocketFrame`类型消息。
+     *
+     * @param ctx       netty通道上下文
+     * @param frame     WebSocketFrame类型消息
+     */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
 
         // 判断是否是关闭链路的指令
@@ -84,7 +92,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
             return;
         }
-        // 本例程仅支持文本消息，不支持二进制消息
+        // 本例程仅支持文本消息，不支持二进制消息(BinaryWebSocketFrame)
         if (!(frame instanceof TextWebSocketFrame)) {
             throw new UnsupportedOperationException(String.format("%s frame types not supported",
                 frame.getClass().getName()));
@@ -100,6 +108,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                                    + new java.util.Date().toString()));
     }
 
+    /**
+     * 处理Http请求类型数据。
+     * 
+     * @param ctx       channel通道上下文
+     * @param req       原始http请求
+     * @param res       应答http响应(传入res的status是400，bad request，不支持http协议，所以肯定会被关闭)
+     */
     private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req,
                                          FullHttpResponse res) {
         // 返回应答给客户端
@@ -110,8 +125,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             setContentLength(res, res.content().readableBytes());
         }
 
-        // 如果是非Keep-Alive，关闭连接
+        // 异步输出响应
         ChannelFuture f = ctx.channel().writeAndFlush(res);
+
+        // 如果是非Keep-Alive，关闭连接(传入res的status是400，bad request，不支持http协议，所以肯定会被关闭)
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
