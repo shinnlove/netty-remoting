@@ -5,10 +5,7 @@
 package com.shinnlove.netty.basic;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -41,13 +38,15 @@ public class TimeServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new TimeServerHandler());
+                        // 获取端口通道的pipeline
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new TimeServerHandler());
                     }
                 });
             // 绑定端口，同步等待成功
             ChannelFuture f = b.bind(port).sync();
 
-            // 等待服务端监听端口关闭
+            // 等待服务端监听端口关闭(服务端代码会阻塞在这里，直到得到一个close的future结果)
             f.channel().closeFuture().sync();
         } finally {
             // 优雅退出，释放线程池资源
