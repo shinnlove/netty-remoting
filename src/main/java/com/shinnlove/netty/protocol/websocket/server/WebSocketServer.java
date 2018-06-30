@@ -39,6 +39,7 @@ public class WebSocketServer {
                         pipeline.addLast("http-codec", new HttpServerCodec());
                         pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                         pipeline.addLast("http-chunked", new ChunkedWriteHandler());
+                        // 增加WebSocket处理器
                         pipeline.addLast("handler", new WebSocketServerHandler());
                     }
                 });

@@ -56,7 +56,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
 
-        // 如果HTTP解码失败，返回HHTP异常
+        // 如果HTTP解码失败，返回HTTP异常
         if (!req.getDecoderResult().isSuccess()
             || (!"websocket".equals(req.headers().get("Upgrade")))) {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
@@ -70,6 +70,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         if (handshaker == null) {
             WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
         } else {
+            // 握手
             handshaker.handshake(ctx.channel(), req);
         }
     }
