@@ -20,6 +20,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 
 /**
+ * Http的XML请求解码器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: HttpXmlRequestDecoder.java, v 0.1 2018-06-29 下午12:02 shinnlove.jinsheng Exp $$
  */

@@ -1,6 +1,10 @@
 
 《Netty基础与源码分析》持续更新中...
 
+本文结合了《Netty权威指南》的一些知识点。
+
+纸上得来终觉浅，源代码部分来自于自己对源码的解读，并加上了一些主流开源框架对Netty使用的实践。
+
 # 一、Linux网络I/O模型
 
 ## 1、阻塞I/O模型
@@ -107,7 +111,150 @@ netty服务端通常配置两个线程组，一个NIO线程组用来接收客户
     f.channel().closeFuture().sync();
 ```
 
-### c) `ChannelHandlerAdapter`
+### c) 客户端连接
+
+客户端只需要配置处理与服务端IO通信的线程组即可：
+
+```java
+// 客户端使用`NioSocketChannel`类来处理
+b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
+  .handler(new ChannelInitializer<SocketChannel>() {
+    @Override
+    public void initChannel(SocketChannel ch) throws Exception {
+      // 在通道中加入时间处理器
+      ChannelPipeline pipeline = ch.pipeline();
+      pipeline.addLast(new TimeClientHandler());
+    }
+  });
+```
+
+当netty服务端就绪后，我们通常使用如下方法：
+
+```java
+ChannelFuture f = b.connect(host, port).sync();
+```
+
+来连接一个远程的netty服务端。连接后返回一个`ChannelFuture`对象，而后调用代码：
+
+```java
+f.channel().closeFuture().sync();
+```
+
+让`ChannelFuture`对象阻塞等待通道关闭事件。
+
+### d) 客户端通道处理与服务端的不同
+
+当作为客户端，通道与服务端连接建立成功后，通常是由客户端先发起`校验`、`业务请求`或`其他类型`数据包，以期待得到服务器的相应。所以一般在客户端的`ChannelHandler`中覆盖`channelActive()`方法来向激活的通道发送一些消息。
+
+```java
+@Override
+public void channelActive(ChannelHandlerContext ctx) {
+  // 直接写入缓存并即时输出
+  ctx.writeAndFlush(firstMessage);
+}
+```
+
+`ChannelHandler`在构造的时候就准备好一条消息（读写数据库或从缓存中），而后异步写入通道。
+
+在netty服务端经过各种`ChannelHandler`处理后，总会有一个`ChannelHandler`把服务端的响应信息写入通道中，此时客户端的`channelRead()`方法被激活，可以在其中处理服务端发来的数据。
+
+```java
+@Override
+public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+  ByteBuf buf = (ByteBuf) msg;
+  byte[] req = new byte[buf.readableBytes()];
+  buf.readBytes(req);
+  String body = new String(req, "UTF-8");
+  System.out.println("Now is : " + body);
+}
+```
+
+这里就简单输出了服务端发来的信息。
+
+## 2、TCP粘包/拆包
+
+# 四、编解码技术
+
+## 1、MessagePack
+
+## 2、Google Protobuf
+
+## 3、JBoss Marshalling
+
+# 五、netty与协议
+
+## 1、HTTP协议与XML
+
+## 2、WebSocket
+
+## 3、私有协议栈
+
+# 六、netty客户端、服务端创建与启动
+
+# 七、Netty源代码解读
+
+## 1、ByteBuf和相关辅助类
+
+## 2、Channel和Unsafe
+
+## 3、ChannelPipeline和ChannelHandler
+
+`pipeline`是每个`Channel`在创建的时候就特定持有的唯一数据结构。
+
+`ChannelPipeline`是`ChannelHandler`处理器列表，处理在`Channel`通道中入境的I/O事件。
+
+用户可以完全控制一个I/O事件的处理、或控制在`pipeline`中交互的`ChannelHandler`的行为。
+
+一个I/O事件在通道中传播的图：
+
+```java
+ *                                                 I/O Request
+ *                                            via {@link Channel} or
+ *                                        {@link ChannelHandlerContext}
+ *                                                      |
+ *  +---------------------------------------------------+---------------+
+ *  |                           ChannelPipeline         |               |
+ *  |                                                  \|/              |
+ *  |    +----------------------------------------------+----------+    |
+ *  |    |                   ChannelHandler  N                     |    |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |              /|\                                  |               |
+ *  |               |                                  \|/              |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |    |                   ChannelHandler N-1                    |    |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |              /|\                                  .               |
+ *  |               .                                   .               |
+ *  | ChannelHandlerContext.fireIN_EVT() ChannelHandlerContext.OUT_EVT()|
+ *  |          [method call]                      [method call]         |
+ *  |               .                                   .               |
+ *  |               .                                  \|/              |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |    |                   ChannelHandler  2                     |    |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |              /|\                                  |               |
+ *  |               |                                  \|/              |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |    |                   ChannelHandler  1                     |    |
+ *  |    +----------+-----------------------------------+----------+    |
+ *  |              /|\                                  |               |
+ *  +---------------+-----------------------------------+---------------+
+ *                  |                                  \|/
+ *  +---------------+-----------------------------------+---------------+
+ *  |               |                                   |               |
+ *  |       [ Socket.read() ]                    [ Socket.write() ]     |
+ *  |                                                                   |
+ *  |  Netty Internal I/O Threads (Transport Implementation)            |
+ *  +-------------------------------------------------------------------+
+```
+
+当I/O事件传入`pipeline`中，位于前面的`ChannelHandler`可以通过`ChannelHandlerContext#fireChannelRead(Object)`把消息传递给下一个`ChannelHandler`。也可以通过` ChannelHandlerContext#write(Object)`将处理消息的结果直接从通道中写出去。
+
+
+
+下面是几个常用的类与源代码解析：
+
+### a) `ChannelHandlerAdapter`
 
 名词解释：`ChannelPipeline`是一个通道的管道，在这个管道上有很多个处理器`ChannelHandler`。
 每当客户端与服务端的连接通道发生IO事件，就会依次执行`pipeline`上挂载的每个`ChannelHandler`。
@@ -181,7 +328,7 @@ netty服务端通常配置两个线程组，一个NIO线程组用来接收客户
 
 这些钩子都可以在方法签名中找到如何使用上下文`ChannelHandlerContext`来`fire`传递IO事件到下一个处理器。
 
-### d) `ChannelHandlerContext`
+### b) `ChannelHandlerContext`
 
 这个类出现在每个Handler处理的形参中。来看它的接口定义：
 
@@ -194,67 +341,7 @@ Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
 
 通常我们调用`ctx.write(xxx)`将信息异步写入通道中；调用`ctx.firexxx`将IO事件或异常传递给`pipeline`中下一个`ChannelHandler`；调用`ctx.flush()`将缓冲区的数据发送出去；调用`ctx.close()`释放通道占用的句柄和资源。
 
-### e) 客户端连接
-
-客户端只需要配置处理与服务端IO通信的线程组即可：
-
-```java
-// 客户端使用`NioSocketChannel`类来处理
-b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
-  .handler(new ChannelInitializer<SocketChannel>() {
-    @Override
-    public void initChannel(SocketChannel ch) throws Exception {
-      // 在通道中加入时间处理器
-      ChannelPipeline pipeline = ch.pipeline();
-      pipeline.addLast(new TimeClientHandler());
-    }
-  });
-```
-
-当netty服务端就绪后，我们通常使用如下方法：
-
-```java
-ChannelFuture f = b.connect(host, port).sync();
-```
-
-来连接一个远程的netty服务端。连接后返回一个`ChannelFuture`对象，而后调用代码：
-
-```java
-f.channel().closeFuture().sync();
-```
-
-让`ChannelFuture`对象阻塞等待通道关闭事件。
-
-### f) 客户端通道处理与服务端的不同
-
-当作为客户端，通道与服务端连接建立成功后，通常是由客户端先发起`校验`、`业务请求`或`其他类型`数据包，以期待得到服务器的相应。所以一般在客户端的`ChannelHandler`中覆盖`channelActive()`方法来向激活的通道发送一些消息。
-
-```java
-@Override
-public void channelActive(ChannelHandlerContext ctx) {
-  // 直接写入缓存并即时输出
-  ctx.writeAndFlush(firstMessage);
-}
-```
-
-`ChannelHandler`在构造的时候就准备好一条消息（读写数据库或从缓存中），而后异步写入通道。
-
-在netty服务端经过各种`ChannelHandler`处理后，总会有一个`ChannelHandler`把服务端的响应信息写入通道中，此时客户端的`channelRead()`方法被激活，可以在其中处理服务端发来的数据。
-
-```java
-@Override
-public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-  ByteBuf buf = (ByteBuf) msg;
-  byte[] req = new byte[buf.readableBytes()];
-  buf.readBytes(req);
-  String body = new String(req, "UTF-8");
-  System.out.println("Now is : " + body);
-}
-```
-
-这里就简单输出了服务端发来的信息。
-
-### g) `ChannelInitializer`
+### c) `ChannelInitializer`
 
 通道初始化类也是一个`ChannelHandler`，它的继承结构是：
 
@@ -268,33 +355,174 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelHandl
 
 是`C)`中适配器的一个导出类，目的是为了在通道就绪后一次性添加多个`ChannelHandler`。它是一种特殊的`ChannelHandler`、只会初始化一次，提供了一种简单的方法将`ChannelHandler`关联到`EventLoop`中。
 
-## 2、TCP粘包/拆包
+### d) `MessageToMessageDecoder`
 
-# 四、编解码技术
+`MessageToMessageDecoder`是一个将一种消息类型转换为另一种消息类型的`ChannelHandler`，来看下它的定义：
 
-## 1、MessagePack
+```java
+/**
+ * A {@link ChannelHandler} which decodes from one message to an other message.
+ *
+ * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
+ * the length of the {@link String}.
+ *
+ * <pre>
+ *     public class StringToIntegerDecoder extends
+ *             {@link MessageToMessageDecoder}<{@link String}> {
+ *
+ *         {@code @Override}
+ *         public void decode({@link ChannelHandlerContext} ctx, {@link String} message,
+ *                            List<Object> out) throws {@link Exception} {
+ *             out.add(message.length());
+ *         }
+ *     }
+ * </pre>
+ *
+ */
+public abstract class MessageToMessageDecoder<I> extends ChannelHandlerAdapter {
+```
 
-## 2、Google Protobuf
+因为它继承自`ChannelHandlerAdapter`，所以覆盖了`ChannelHandler`的`channelRead()`方法。而原始`channelRead()`方法形参传入`Object`类型的msg，它的实现中调用了`acceptInboundMessage()`检验是否是持有类型的消息，如果是就做一个转型。
 
-## 3、JBoss Marshalling
+转型后调用`abstract void decode(ChannelHandlerContext ctx, I msg, List<Object> out)`方法来将原始类型的数据转成指定类型的数据。**这个方法需要被任何继承自`MessageToMessageDecoder`的类覆盖，并要把入参（转型后的方法）进行转换后加入`List<Object> out`类型的列表中**。
 
-# 五、netty与协议
+```java
+@Override
+public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+  RecyclableArrayList out = RecyclableArrayList.newInstance();
+  try {
+    if (acceptInboundMessage(msg)) {
+      @SuppressWarnings("unchecked")
+      I cast = (I) msg;
+      try {
+        decode(ctx, cast, out);
+      } finally {
+        ReferenceCountUtil.release(cast);
+      }
+    } else {
+      out.add(msg);
+    }
+  } catch (DecoderException e) {
+    throw e;
+  } catch (Exception e) {
+    throw new DecoderException(e);
+  } finally {
+    int size = out.size();
+    for (int i = 0; i < size; i ++) {
+      ctx.fireChannelRead(out.get(i));
+    }
+    out.recycle();
+  }
+}
+```
 
-## 1、HTTP协议与XML
+注意到`MessageToMessageDecoder`的`channelRead()`方法最后的finally中，将`List<Object> out`列表中的每个消息对象重新`fireXXX`出去，让下一个`ChannelHandler`去执行`channelRead()`方法。
 
-## 2、WebSocket
+**因此`MessageToMessageDecoder`类型的`ChannelHandler`必须放在最前面，让消息先经过类型转换处理，才能被后边特殊的`SimpleChannelInboundHandler`导出类处理器去处理。**
 
-## 3、私有协议栈
+### e) `SimpleChannelInboundHandler`
 
-# 六、netty客户端、服务端创建与启动
+一种明确**处理特殊指定类型**消息的`ChannelHandler`，当它持有某类型的消息时（如`<String>`）将使得`messageReceived()`函数的`message`入参为`String`类型。它是否释放消息取决于他构造器持有参数的类型。
 
-# 七、Netty源代码解读
+以下内容是它的定义：
 
-## 1、ByteBuf和相关辅助类
+```java
+/**
+ * {@link ChannelHandler} which allows to explicit(明确清楚) only handle a specific type of messages.
+ *
+ * For example here is an implementation which only handle {@link String} messages.
+ *
+ * <pre>
+ *     public class StringHandler extends
+ *             {@link SimpleChannelInboundHandler}<{@link String}> {
+ *
+ *         {@code @Override}
+ *         protected void messageReceived({@link ChannelHandlerContext} ctx, {@link String} message)
+ *                 throws {@link Exception} {
+ *             System.out.println(message);
+ *         }
+ *     }
+ * </pre>
+ *
+ */
+public abstract class SimpleChannelInboundHandler<I> extends ChannelHandlerAdapter {
+```
 
-## 2、Channel和Unsafe
+在`SimpleChannelInboundHandler`简单通道入境处理器中覆盖了`ChannelHandler`的`channelRead()`方法：
 
-## 3、ChannelPipeline和ChannelHandler
+```java
+@Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        boolean release = true;
+        try {
+            if (acceptInboundMessage(msg)) {
+                @SuppressWarnings("unchecked")
+                I imsg = (I) msg;
+                messageReceived(ctx, imsg);
+            } else {
+                release = false;
+                ctx.fireChannelRead(msg);
+            }
+        } finally {
+            if (autoRelease && release) {
+                ReferenceCountUtil.release(msg);
+            }
+        }
+    }
+```
+
+对`ChannelHandler`中所有传入的`Object`类型的消息进行类型检查：`acceptInboundMessage()`：
+
+这个方法调用matcher.match()来验证是否是某个类型的实例，`ReflectiveMatcher`是matcher的一个内部实现类。
+
+```java
+/**
+  * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
+  * {@link ChannelHandler} in the {@link ChannelPipeline}.
+  */
+public boolean acceptInboundMessage(Object msg) throws Exception {
+  return matcher.match(msg);
+}
+
+...
+  
+private static final class ReflectiveMatcher extends TypeParameterMatcher {
+  private final Class<?> type;
+
+  ReflectiveMatcher(Class<?> type) {
+    this.type = type;
+  }
+
+  @Override
+  public boolean match(Object msg) {
+    return type.isInstance(msg);
+  }
+}
+```
+
+**可以很明确的看到，`SimpleChannelInboundHandler`将指定类型的消息拦截下来处理，而fireXXX了其他不是这种类型的消息。**
+
+当它把消息拦截下来之后，调用了自己内部定义的抽象方法：`messageReceived()`，并将`Object`类型参数做了对应类型参数转换：
+
+```java
+if (acceptInboundMessage(msg)) {
+  @SuppressWarnings("unchecked")
+  I imsg = (I) msg;
+  messageReceived(ctx, imsg);
+}
+
+...
+
+/**
+  * Is called for each message of type {@link I}.
+  *
+  * @param ctx           the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
+  *                      belongs to 
+  * @param msg           the message to handle
+  * @throws Exception    is thrown if an error occurred
+  */
+protected abstract void messageReceived(ChannelHandlerContext ctx, I msg) throws Exception;
+```
 
 ## 4、EventLoop和EventLoopGroup
 

@@ -18,6 +18,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
 /**
+ * 抽象HttpResponse->XML->Object
+ *
  * @author shinnlove.jinsheng
  * @version $Id: AbstractHttpXmlDecoder.java, v 0.1 2018-06-29 下午12:01 shinnlove.jinsheng Exp $$
  */
@@ -25,6 +27,7 @@ public abstract class AbstractHttpXmlDecoder<T> extends MessageToMessageDecoder<
 
     private IBindingFactory      factory;
     private StringReader         reader;
+    /** 构造传入，XML与Class对象之间转换 */
     private Class<?>             clazz;
     private boolean              isPrint;
     private final static String  CHARSET_NAME = "UTF-8";
@@ -39,11 +42,20 @@ public abstract class AbstractHttpXmlDecoder<T> extends MessageToMessageDecoder<
         this.isPrint = isPrint;
     }
 
+    /**
+     * 使用Jibx工厂类创建`IUnmarshallingContext`上下文，解码XML和对象。
+     *
+     * @param arg0
+     * @param body          ByteBuf来自DefaultFullHttpResponse.toContent()得到的字节缓冲数组。
+     * @return
+     * @throws Exception
+     */
     protected Object decode0(ChannelHandlerContext arg0, ByteBuf body) throws Exception {
         factory = BindingDirectory.getFactory(clazz);
         String content = body.toString(UTF_8);
-        if (isPrint)
+        if (isPrint) {
             System.out.println("The body is : " + content);
+        }
         reader = new StringReader(content);
         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
         Object result = uctx.unmarshalDocument(reader);
@@ -68,4 +80,5 @@ public abstract class AbstractHttpXmlDecoder<T> extends MessageToMessageDecoder<
             reader = null;
         }
     }
+
 }

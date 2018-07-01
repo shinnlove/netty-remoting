@@ -39,7 +39,7 @@ public class HttpXmlClient {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast("http-decoder", new HttpResponseDecoder());
                         ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));
-                        // XML解码器
+                        // XML解码器(将HttpResponse转换为HttpXmlResponse)
                         ch.pipeline().addLast("xml-decoder",
                             new HttpXmlResponseDecoder(Order.class, true));
                         ch.pipeline().addLast("http-encoder", new HttpRequestEncoder());
