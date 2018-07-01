@@ -44,7 +44,7 @@ public class HttpXmlClient {
                             new HttpXmlResponseDecoder(Order.class, true));
                         ch.pipeline().addLast("http-encoder", new HttpRequestEncoder());
                         ch.pipeline().addLast("xml-encoder", new HttpXmlRequestEncoder());
-                        ch.pipeline().addLast("xmlClientHandler", new HttpXmlClientHandle());
+                        ch.pipeline().addLast("xmlClientHandler", new  ());
                     }
                 });
 
