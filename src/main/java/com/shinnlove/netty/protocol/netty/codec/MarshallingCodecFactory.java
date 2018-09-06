@@ -9,6 +9,8 @@ import java.io.IOException;
 import org.jboss.marshalling.*;
 
 /**
+ * Marshalling编码工厂，用来生成`Marshaller`和`Unmarshaller`序列化和反序列化类。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: MarshallingCodecFactory.java, v 0.1 2018-06-29 下午1:08 shinnlove.jinsheng Exp $$
  */
