@@ -9,12 +9,21 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandler.Sharable;
 
 /**
+ * `ProtoBuf`方式处理消息的服务端处理器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: SubReqServerHandler.java, v 0.1 2018-06-29 下午1:49 shinnlove.jinsheng Exp $$
  */
 @Sharable
 public class SubReqServerHandler extends ChannelHandlerAdapter {
 
+    /**
+     * 通道可读的情况下，即客户端发来消息时，服务端如果发现请求对象用户名是目标用户，则发出响应。
+     *
+     * @param ctx
+     * @param msg
+     * @throws Exception
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         SubscribeReqProto.SubscribeReq req = (SubscribeReqProto.SubscribeReq) msg;
@@ -24,6 +33,12 @@ public class SubReqServerHandler extends ChannelHandlerAdapter {
         }
     }
 
+    /**
+     * 生成一个简单的`ProtoBuf`支持的可序列化对象。
+     *
+     * @param subReqID
+     * @return
+     */
     private SubscribeRespProto.SubscribeResp resp(int subReqID) {
         SubscribeRespProto.SubscribeResp.Builder builder = SubscribeRespProto.SubscribeResp
             .newBuilder();

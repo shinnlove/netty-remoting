@@ -18,6 +18,10 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
 /**
+ * 使用`ProtoBuf`序列化方式的netty客户端案例。
+ *
+ * 主要序列化是`ProtobufVarint32FrameDecoder`、`ProtobufDecoder`、`ProtobufVarint32LengthFieldPrepender`等的支持。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: SubReqClient.java, v 0.1 2018-06-29 下午1:49 shinnlove.jinsheng Exp $$
  */

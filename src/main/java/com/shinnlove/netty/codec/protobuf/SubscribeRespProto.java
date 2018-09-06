@@ -5,6 +5,8 @@
 package com.shinnlove.netty.codec.protobuf;
 
 /**
+ * IDL执行命令自动生成的`ProtoBuf`响应类。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: SubscribeRespProto.java, v 0.1 2018-06-29 下午1:52 shinnlove.jinsheng Exp $$
  */

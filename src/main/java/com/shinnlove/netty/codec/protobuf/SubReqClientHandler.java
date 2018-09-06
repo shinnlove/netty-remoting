@@ -11,6 +11,8 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
+ * 客户端用以生成`ProtoBuf`支持序列化的对象的`Handler`。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: SubReqClientHandler.java, v 0.1 2018-06-29 下午1:49 shinnlove.jinsheng Exp $$
  */
@@ -22,6 +24,13 @@ public class SubReqClientHandler extends ChannelHandlerAdapter {
     public SubReqClientHandler() {
     }
 
+    /**
+     * 客户端：通道被激活的时候产生10个对象并且写到缓冲区并发送。
+     *
+     * 有`ProtuBuf`的`Encoder`会将写入的消息用`ProtoBuf`的加密方式序列化出去。
+     *
+     * @param ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         for (int i = 0; i < 10; i++) {
@@ -30,6 +39,12 @@ public class SubReqClientHandler extends ChannelHandlerAdapter {
         ctx.flush();
     }
 
+    /**
+     * 生成`ProtoBuf`支持序列化的对象。
+     *
+     * @param i
+     * @return
+     */
     private SubscribeReqProto.SubscribeReq subReq(int i) {
         SubscribeReqProto.SubscribeReq.Builder builder = SubscribeReqProto.SubscribeReq
             .newBuilder();

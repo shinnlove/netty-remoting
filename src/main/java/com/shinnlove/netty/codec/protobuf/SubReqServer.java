@@ -19,6 +19,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 /**
+ * 使用`ProtoBuf`的Netty服务端示例。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: SubReqServer.java, v 0.1 2018-06-29 下午1:49 shinnlove.jinsheng Exp $$
  */
