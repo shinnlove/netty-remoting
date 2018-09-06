@@ -39,7 +39,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, Object msg) throws Exception {
-        // 传统的HTTP接入
+        // 第一次握手消息由HTTP协议承载，是一个HTTP消息
         if (msg instanceof FullHttpRequest) {
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         }
@@ -70,7 +70,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         if (handshaker == null) {
             WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
         } else {
-            // 握手
+            // `WebSocket`协议握手
+            /**
+             * 在handshake的时候动态加入了`websocket`协议所需的`newWebsocketDecoder`和`newWebSocketEncoder`编解码器，
+             * 所以后续发来的`WebSocket`消息才能直接变成`WebSocketFrame`类型消息。
+             * @see {@link WebSocketServerHandshaker#handshake(io.netty.channel.Channel, io.netty.handler.codec.http.FullHttpRequest, io.netty.handler.codec.http.HttpHeaders, io.netty.channel.ChannelPromise)}
+             * 可以获取通道`pipeline`**动态添加**新的`handler`。
+             */
             handshaker.handshake(ctx.channel(), req);
         }
     }
