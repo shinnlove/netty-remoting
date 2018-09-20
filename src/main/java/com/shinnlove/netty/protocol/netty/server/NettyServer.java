@@ -30,6 +30,9 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
  */
 public class NettyServer {
 
+    /**
+     * 将Netty服务端开启并绑定在某个端口号。
+     */
     public void bind() {
         // 配置服务端的NIO线程组
         // 服务端需要两个线程组
@@ -67,15 +70,20 @@ public class NettyServer {
             f.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
-            System.out.println("遇到了`InterruptedException`错误");
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("遇到了`Exception`错误");
+            System.out.println("遇到了未预期的错误");
             e.printStackTrace();
         }
 
     }
 
+    /**
+     * 运行NettyServer端。
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         new NettyServer().bind();
     }
