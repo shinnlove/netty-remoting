@@ -44,7 +44,7 @@ public class NettyClient {
      * @param host
      * @throws Exception
      */
-    public void connect(int port, String host) throws Exception {
+    public void connect(int port, String host) {
         // 配置客户端NIO线程组
         try {
             Bootstrap b = new Bootstrap();
@@ -72,6 +72,12 @@ public class NettyClient {
             // 关闭通道
             future.channel().closeFuture().sync();
 
+        } catch (InterruptedException e) {
+            System.out.println("遇到了`InterruptedException`错误");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("遇到了`Exception`错误");
+            e.printStackTrace();
         } finally {
             // 所有资源释放完成之后，清空资源，再次发起重连操作
             executor.execute(new Runnable() {

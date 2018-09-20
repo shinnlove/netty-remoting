@@ -14,6 +14,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * netty服务端心跳响应处理器。
  *
+ * 采用ping-pong机制的心跳。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: HeartBeatRespHandler.java, v 0.1 2018-06-29 下午1:11 shinnlove.jinsheng Exp $$
  */
@@ -34,20 +36,19 @@ public class HeartBeatRespHandler extends ChannelHandlerAdapter {
 
         if (message.getHeader() == null
             || message.getHeader().getType() == MessageType.HEARTBEAT_REQ.value()) {
+            // 处理心跳
+            System.out.println("Receive client heart beat message : ---> " + message);
+
+            // 生成心跳响应包
+            NettyMessage heartBeat = buildHeatBeatResp();
+            System.out.println("Send heart beat response message to client : ---> " + heartBeat);
+
+            // 发送
+            ctx.writeAndFlush(heartBeat);
+        } else {
             // 透传其他消息
             ctx.fireChannelRead(msg);
-            return;
         }
-
-        // 处理心跳
-        System.out.println("Receive client heart beat message : ---> " + message);
-
-        // 生成心跳响应包
-        NettyMessage heartBeat = buildHeatBeatResp();
-        System.out.println("Send heart beat response message to client : ---> " + heartBeat);
-
-        // 发送
-        ctx.writeAndFlush(heartBeat);
     }
 
     /**

@@ -29,7 +29,7 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
  */
 public class NettyServer {
 
-    public void bind() throws Exception {
+    public void bind() {
         // 配置服务端的NIO线程组
         // 服务端需要两个线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -44,18 +44,29 @@ public class NettyServer {
                     // Tips：netty的每个handler的`channelRead`和exceptionCaught`如果调用`fire...`可以发送给下个handler处理!!
                     ch.pipeline().addLast(new NettyMessageDecoder(1024 * 1024, 4, 4));
                     ch.pipeline().addLast(new NettyMessageEncoder());
+                    // ❤心跳超时直接采用Netty的ReadTimeoutHandler机制，当一定周期内（默认50秒）没有收到对方任何消息，主动关闭链路
                     ch.pipeline().addLast("readTimeoutHandler", new ReadTimeoutHandler(50));
-                    // 服务端登录验证响应处理器
+                    // 服务端登录验证响应处理器(名称随意，默认使用类名)
                     ch.pipeline().addLast(new LoginAuthRespHandler());
-                    // 服务端心跳响应处理器
+                    // 服务端心跳响应处理器(服务端是pong回去心跳)
                     ch.pipeline().addLast("HeartBeatHandler", new HeartBeatRespHandler());
                 }
             });
 
         // 绑定端口，同步等待成功
-        b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
-        System.out.println("Netty server start ok : "
-                           + (NettyConstant.REMOTE_IP + " : " + NettyConstant.REMOTE_PORT));
+        try {
+            b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
+
+            System.out.println("Netty server start ok : "
+                               + (NettyConstant.REMOTE_IP + " : " + NettyConstant.REMOTE_PORT));
+        } catch (InterruptedException e) {
+            System.out.println("遇到了`InterruptedException`错误");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("遇到了`Exception`错误");
+            e.printStackTrace();
+        }
+
     }
 
     public static void main(String[] args) throws Exception {
