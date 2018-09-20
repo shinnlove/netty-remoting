@@ -48,9 +48,7 @@ public final class NettyMessage {
         this.body = body;
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
      * @see java.lang.Object#toString()
      */
     @Override

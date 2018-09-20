@@ -14,12 +14,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
+ * Netty消息加密器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: NettyMessageEncoder.java, v 0.1 2018-06-29 下午1:10 shinnlove.jinsheng Exp $$
  */
 public final class NettyMessageEncoder extends MessageToByteEncoder<NettyMessage> {
 
-    MarshallingEncoder marshallingEncoder;
+    private MarshallingEncoder marshallingEncoder;
 
     public NettyMessageEncoder() throws IOException {
         this.marshallingEncoder = new MarshallingEncoder();

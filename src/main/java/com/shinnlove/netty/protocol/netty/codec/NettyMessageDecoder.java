@@ -16,12 +16,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 /**
+ * Netty消息解码器。
+ *
  * @author shinnlove.jinsheng
  * @version $Id: NettyMessageDecoder.java, v 0.1 2018-06-29 下午1:09 shinnlove.jinsheng Exp $$
  */
 public class NettyMessageDecoder extends LengthFieldBasedFrameDecoder {
 
-    MarshallingDecoder marshallingDecoder;
+    private MarshallingDecoder marshallingDecoder;
 
     public NettyMessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength)
                                                                                                 throws IOException {
@@ -31,6 +33,7 @@ public class NettyMessageDecoder extends LengthFieldBasedFrameDecoder {
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+        // 使用`LengthFieldBasedFrameDecoder`解码，如果读到null，代表半包，直接返回null
         ByteBuf frame = (ByteBuf) super.decode(ctx, in);
         if (frame == null) {
             return null;

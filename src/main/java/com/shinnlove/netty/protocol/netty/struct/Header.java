@@ -15,17 +15,23 @@ import java.util.Map;
  */
 public final class Header {
 
+    /** CRC校验码 */
     private int                 crcCode    = 0xabef0101;
 
-    private int                 length;                                    // 消息长度
+    /** 消息长度 */
+    private int                 length;
 
-    private long                sessionID;                                 // 会话ID
+    /** 登录后的分布式会话ID */
+    private long                sessionID;
 
-    private byte                type;                                      // 消息类型
+    /** 消息类型 */
+    private byte                type;
 
-    private byte                priority;                                  // 消息优先级
+    /** 消息优先级 */
+    private byte                priority;
 
-    private Map<String, Object> attachment = new HashMap<String, Object>(); // 附件
+    /** 消息头附件 */
+    private Map<String, Object> attachment = new HashMap<String, Object>();
 
     /**
      * @return the crcCode
@@ -117,9 +123,7 @@ public final class Header {
         this.attachment = attachment;
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
      * @see java.lang.Object#toString()
      */
     @Override
