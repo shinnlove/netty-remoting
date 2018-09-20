@@ -11,6 +11,7 @@ import com.shinnlove.netty.protocol.netty.codec.NettyMessageDecoder;
 import com.shinnlove.netty.protocol.netty.codec.NettyMessageEncoder;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -55,10 +56,14 @@ public class NettyServer {
 
         // 绑定端口，同步等待成功
         try {
-            b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
+            ChannelFuture f = b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
 
             System.out.println("Netty server start ok : "
                                + (NettyConstant.REMOTE_IP + " : " + NettyConstant.REMOTE_PORT));
+
+            // 等待服务端监听端口关闭(服务端代码会阻塞在这里，直到得到一个close的future结果)
+            f.channel().closeFuture().sync();
+
         } catch (InterruptedException e) {
             System.out.println("遇到了`InterruptedException`错误");
             e.printStackTrace();

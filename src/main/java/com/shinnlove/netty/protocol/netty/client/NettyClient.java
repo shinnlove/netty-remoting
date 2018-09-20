@@ -34,20 +34,20 @@ public class NettyClient {
     /** 有一个线程的定时调度线程池 */
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-    /** netty客户端线程组 */
-    EventLoopGroup                   group    = new NioEventLoopGroup();
-
     /**
      * 向一个给定的IP地址套接字发起netty连接。
      * 
-     * @param port
      * @param host
-     * @throws Exception
+     * @param port
      */
-    public void connect(int port, String host) {
+    public void connect(String host, int port) {
         // 配置客户端NIO线程组
         try {
+            // react线程组
             Bootstrap b = new Bootstrap();
+            // netty客户端线程组
+            EventLoopGroup group = new NioEventLoopGroup();
+
             b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -87,7 +87,7 @@ public class NettyClient {
                         TimeUnit.SECONDS.sleep(1);
                         try {
                             // 发起重连操作，重连成功会阻塞在b.connect(...)函数处
-                            connect(port, host);
+                            connect(host, port);
                         } catch (Exception e) {
                             // 打印连接失败
                             e.printStackTrace();
@@ -102,11 +102,13 @@ public class NettyClient {
     }
 
     /**
+     * 运行Netty客户端。
+     *
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        new NettyClient().connect(NettyConstant.REMOTE_PORT, NettyConstant.REMOTE_IP);
+        new NettyClient().connect(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT);
     }
 
 }
