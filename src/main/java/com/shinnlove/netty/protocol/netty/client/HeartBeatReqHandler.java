@@ -43,7 +43,7 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
             // 如果收到的消息是服务端的登录验证响应
 
             // 使用上下文`EventExecutor`提交一个5秒一次的定时任务：生成客户端心跳包
-            // heartBeat是一个定时future，当发生异常时可以被取消
+            // heartBeat是一个定时future，当发生异常时可以被取消(!!!特别用来在服务端宕机时期、客户端不再发送心跳)
             heartBeat = ctx.executor().scheduleAtFixedRate(
                 new HeartBeatReqHandler.HeartBeatTask(ctx), 0, 5000, TimeUnit.MILLISECONDS);
 
@@ -74,7 +74,7 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
         @Override
         public void run() {
             NettyMessage heatBeat = buildHeatBeatReq();
-            System.out.println("Client send heart beat messsage to server : ---> " + heatBeat);
+            System.out.println("Client send heart beat message to server : ---> " + heatBeat);
             ctx.writeAndFlush(heatBeat);
         }
 
@@ -103,6 +103,7 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
+        // 当客户端发现与服务端通道之间出现异常时、先让心跳发送定时任务停止、而后再将错误扩散出去
         if (heartBeat != null) {
             heartBeat.cancel(true);
             heartBeat = null;

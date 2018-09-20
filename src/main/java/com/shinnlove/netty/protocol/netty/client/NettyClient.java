@@ -34,6 +34,9 @@ public class NettyClient {
     /** 有一个线程的定时调度线程池 */
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
+    /** netty客户端线程组(作为成员变量让客户端重连时可以复用，否则shutdownGracefully()...) */
+    private EventLoopGroup           group    = new NioEventLoopGroup();
+
     /**
      * 向一个给定的IP地址套接字发起netty连接。
      * 
@@ -45,9 +48,6 @@ public class NettyClient {
         try {
             // react线程组
             Bootstrap b = new Bootstrap();
-            // netty客户端线程组
-            EventLoopGroup group = new NioEventLoopGroup();
-
             b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -73,29 +73,25 @@ public class NettyClient {
             future.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
-            System.out.println("遇到了`InterruptedException`错误");
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("遇到了`Exception`错误");
+            System.out.println("发生了未预期的连接错误。");
             e.printStackTrace();
         } finally {
             // 所有资源释放完成之后，清空资源，再次发起重连操作
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                        try {
-                            // 发起重连操作，重连成功会阻塞在b.connect(...)函数处
-                            connect(host, port);
-                        } catch (Exception e) {
-                            // 打印连接失败
-                            e.printStackTrace();
-                        }
-                    } catch (InterruptedException e) {
-                        // sleep被唤醒
-                        e.printStackTrace();
-                    }
+            executor.execute(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+
+                    // 发起重连操作，重连成功会阻塞在b.connect(...)函数处
+                    connect(host, port);
+
+                } catch (InterruptedException e) {
+                    // sleep被唤醒
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    // 打印连接失败
+                    e.printStackTrace();
                 }
             });
         }
