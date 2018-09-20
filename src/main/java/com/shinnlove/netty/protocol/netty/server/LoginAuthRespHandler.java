@@ -37,6 +37,7 @@ public class LoginAuthRespHandler extends ChannelHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("服务端开始处理登录");
         NettyMessage message = (NettyMessage) msg;
 
         // 如果是握手请求消息，处理，其它消息透传

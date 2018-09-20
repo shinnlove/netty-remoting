@@ -28,6 +28,7 @@ public class LoginAuthReqHandler extends ChannelHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // netty通道连接成功后，客户端立刻发送一个登录请求包给服务端
+        System.out.println("客户端发送登录请求");
         ctx.writeAndFlush(buildLoginReq());
     }
 
@@ -40,6 +41,7 @@ public class LoginAuthReqHandler extends ChannelHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("客户端开始处理消息");
         NettyMessage message = (NettyMessage) msg;
 
         // 如果是握手应答消息，需要判断是否认证成功

@@ -30,8 +30,11 @@ public final class NettyMessageEncoder extends MessageToByteEncoder<NettyMessage
     @Override
     protected void encode(ChannelHandlerContext ctx, NettyMessage msg, ByteBuf sendBuf)
                                                                                        throws Exception {
-        if (msg == null || msg.getHeader() == null)
+        if (msg == null || msg.getHeader() == null) {
             throw new Exception("The encode message is null");
+        }
+
+        System.out.println("开始解码消息");
 
         // 消息头：CRC校验头、消息头长度、sessionId、消息类型、消息优先级、消息附件长度
         // 32位int整型->4KB

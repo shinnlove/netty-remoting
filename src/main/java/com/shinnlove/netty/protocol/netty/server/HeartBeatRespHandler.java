@@ -32,6 +32,7 @@ public class HeartBeatRespHandler extends ChannelHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("服务端开始处理心跳消息");
         NettyMessage message = (NettyMessage) msg;
 
         if (message.getHeader() == null

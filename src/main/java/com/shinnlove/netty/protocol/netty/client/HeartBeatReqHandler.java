@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class HeartBeatReqHandler extends ChannelHandlerAdapter {
 
+    /** 心跳结果Future */
     private volatile ScheduledFuture<?> heartBeat;
 
     /**
@@ -33,6 +34,7 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("客户端发送心跳与处理心跳响应");
         NettyMessage message = (NettyMessage) msg;
 
         // 握手成功，主动发送心跳消息
