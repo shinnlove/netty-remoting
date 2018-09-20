@@ -4,7 +4,6 @@
  */
 package com.shinnlove.netty.protocol.netty.client;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -66,8 +65,11 @@ public class NettyClient {
                 });
 
             // 发起异步连接操作
-            ChannelFuture future = b.connect(new InetSocketAddress(host, port),
-                new InetSocketAddress(NettyConstant.LOCAL_IP, NettyConstant.LOCAL_PORT)).sync();
+            //            ChannelFuture future = b.connect(new InetSocketAddress(host, port),
+            //                new InetSocketAddress(NettyConstant.LOCAL_IP, NettyConstant.LOCAL_PORT)).sync();
+
+            ChannelFuture future = b.connect(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT)
+                .sync();
 
             // 关闭通道
             future.channel().closeFuture().sync();
@@ -84,7 +86,7 @@ public class NettyClient {
                 @Override
                 public void run() {
                     try {
-                        TimeUnit.SECONDS.sleep(1);
+                        TimeUnit.SECONDS.sleep(5);
                         try {
                             // 发起重连操作，重连成功会阻塞在b.connect(...)函数处
                             connect(host, port);

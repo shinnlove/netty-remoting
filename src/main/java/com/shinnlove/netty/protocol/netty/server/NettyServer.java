@@ -56,10 +56,12 @@ public class NettyServer {
 
         // 绑定端口，同步等待成功
         try {
-            ChannelFuture f = b.bind(NettyConstant.LOCAL_IP, NettyConstant.LOCAL_PORT).sync();
+            ChannelFuture f = b.bind(NettyConstant.REMOTE_IP, NettyConstant.REMOTE_PORT).sync();
 
             System.out.println("Netty server start ok : "
-                               + (NettyConstant.LOCAL_IP + ":" + NettyConstant.LOCAL_PORT));
+                               + (NettyConstant.REMOTE_IP + ":" + NettyConstant.REMOTE_PORT));
+
+            Thread.sleep(100000);
 
             // 等待服务端监听端口关闭(服务端代码会阻塞在这里，直到得到一个close的future结果)
             f.channel().closeFuture().sync();
