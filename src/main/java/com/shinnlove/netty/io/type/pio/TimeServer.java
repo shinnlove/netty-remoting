@@ -2,13 +2,13 @@
  * Alipay.com Inc.
  * Copyright (c) 2004-2018 All Rights Reserved.
  */
-package com.shinnlove.netty.pio;
+package com.shinnlove.netty.io.type.pio;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.shinnlove.netty.bio.TimeServerHandler;
+import com.shinnlove.netty.io.type.bio.TimeServerHandler;
 
 /**
  * 使用线程池

@@ -39,7 +39,7 @@ public class NettyMessageDecoder extends LengthFieldBasedFrameDecoder {
             return null;
         }
 
-        System.out.println("开始编码消息");
+        System.out.println("开始解码消息");
 
         // 从字节缓存中读取消息头
         NettyMessage message = new NettyMessage();

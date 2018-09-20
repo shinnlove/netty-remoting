@@ -55,11 +55,12 @@
       <artifactId>jboss-marshalling</artifactId>
       <version>1.3.0.CR9</version>
     </dependency>
+    <!-- 创建Marshalling-serial的时候如果scope是test，则直接报错NPE! -->
     <dependency>
       <groupId>org.jboss.marshalling</groupId>
       <artifactId>jboss-marshalling-serial</artifactId>
       <version>1.3.0.CR9</version>
-      <scope>test</scope>
+      <!--<scope>test</scope>-->
     </dependency>
 
     <!-- jibx-bind -->

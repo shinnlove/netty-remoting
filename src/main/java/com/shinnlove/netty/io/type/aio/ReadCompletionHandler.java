@@ -2,7 +2,7 @@
  * Alipay.com Inc.
  * Copyright (c) 2004-2018 All Rights Reserved.
  */
-package com.shinnlove.netty.aio;
+package com.shinnlove.netty.io.type.aio;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
