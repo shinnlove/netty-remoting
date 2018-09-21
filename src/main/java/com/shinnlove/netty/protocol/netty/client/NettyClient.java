@@ -5,19 +5,18 @@
 package com.shinnlove.netty.protocol.netty.client;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.shinnlove.netty.protocol.netty.NettyConstant;
 import com.shinnlove.netty.protocol.netty.codec.NettyMessageDecoder;
 import com.shinnlove.netty.protocol.netty.codec.NettyMessageEncoder;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -66,11 +65,34 @@ public class NettyClient {
                 });
 
             // 发起异步连接操作
-            ChannelFuture future = b.connect(new InetSocketAddress(host, port),
+            ChannelFuture channelFuture = b.connect(new InetSocketAddress(host, port),
                 new InetSocketAddress(NettyConstant.LOCAL_IP, NettyConstant.LOCAL_PORT)).sync();
 
+            // 通道等待标记
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicLong success = new AtomicLong(1);
+
+            // 添加异步监听
+            channelFuture.addListener((future) -> {
+                if (future.isSuccess()) {
+                    success.incrementAndGet();
+                    System.out.println("connectOK");
+                } else {
+                    System.out.println("connectFail");
+                }
+                latch.countDown();
+            });
+
+            // 通道成功的话
+            if (success.get() > 1) {
+                // 重新获得通道的句柄
+                final Channel channel = channelFuture.channel();
+                // 写出未知消息
+                channel.writeAndFlush("Hello");
+            }
+
             // 关闭通道
-            future.channel().closeFuture().sync();
+            channelFuture.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
