@@ -54,6 +54,8 @@ public class NettyServer {
                     ch.pipeline().addLast(new LoginAuthRespHandler());
                     // 服务端心跳响应处理器(服务端是pong回去心跳)
                     ch.pipeline().addLast("HeartBeatHandler", new HeartBeatRespHandler());
+                    // 服务器响应远程RPC调用请求
+                    ch.pipeline().addLast(new ServiceInvokeRespHandler());
                 }
             });
 

@@ -11,9 +11,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.shinnlove.netty.protocol.netty.MessageType;
 import com.shinnlove.netty.protocol.netty.NettyConstant;
 import com.shinnlove.netty.protocol.netty.codec.NettyMessageDecoder;
 import com.shinnlove.netty.protocol.netty.codec.NettyMessageEncoder;
+import com.shinnlove.netty.protocol.netty.struct.Header;
+import com.shinnlove.netty.protocol.netty.struct.NettyMessage;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -61,6 +64,8 @@ public class NettyClient {
                         ch.pipeline().addLast("LoginAuthHandler", new LoginAuthReqHandler());
                         // 客户端心跳验证处理器
                         ch.pipeline().addLast("HeartBeatHandler", new HeartBeatReqHandler());
+                        // 服务结果处理Handler
+                        ch.pipeline().addLast(new ServiceInvokeReqHandler());
                     }
                 });
 
@@ -70,12 +75,12 @@ public class NettyClient {
 
             // 通道等待标记
             final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicLong success = new AtomicLong(1);
+            final AtomicLong success = new AtomicLong(0);
 
             // 添加异步监听
             channelFuture.addListener((future) -> {
                 if (future.isSuccess()) {
-                    success.incrementAndGet();
+                    System.out.println(success.incrementAndGet());
                     System.out.println("connectOK");
                 } else {
                     System.out.println("connectFail");
@@ -83,12 +88,22 @@ public class NettyClient {
                 latch.countDown();
             });
 
+            latch.await();
+
             // 通道成功的话
-            if (success.get() > 1) {
+            if (success.get() > 0) {
                 // 重新获得通道的句柄
-                final Channel channel = channelFuture.channel();
-                // 写出未知消息
-                channel.writeAndFlush("Hello");
+                Channel channel = channelFuture.channel();
+
+                // 创建服务请求消息
+                NettyMessage serviceReq = new NettyMessage();
+                Header header = new Header();
+                header.setType(MessageType.SERVICE_REQ.value());
+                serviceReq.setHeader(header);
+                serviceReq.setBody("Hello netty server~!Hello netty server~!");
+
+                // 写出服务请求
+                channel.writeAndFlush(serviceReq);
             }
 
             // 关闭通道
